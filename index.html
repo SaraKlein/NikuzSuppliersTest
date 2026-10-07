@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>הגשת חשבונית</title>
+</head>
+<body>
+  <h1>בדיקה</h1>
+  <button onclick="test()">בדיקת API</button>
+  <pre id="out"></pre>
+  <script>
+    async function test() {
+      const r = await fetch('/api/ping');
+      document.getElementById('out').textContent = await r.text();
+    }
+  </script>
+</body>
+</html>
