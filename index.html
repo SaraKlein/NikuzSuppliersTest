@@ -150,6 +150,11 @@
       background: #fff5e9;
     }
 
+    .status.is-success {
+      color: #205f3b;
+      background: #edf7ef;
+    }
+
     @media (max-width: 520px) {
       .login-card {
         padding: 32px 24px;
@@ -211,15 +216,55 @@
     const form = document.getElementById('supplier-login');
     const status = document.getElementById('form-status');
 
-    form.addEventListener('submit', (event) => {
+    form.addEventListener('submit', async (event) => {
       event.preventDefault();
       status.textContent = '';
+      status.classList.remove('is-success');
 
       if (!form.reportValidity()) {
         return;
       }
 
-      status.textContent = 'הטופס מוכן, אך הכניסה עדיין אינה מחוברת למערכת.';
+      const submitButton = form.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+      submitButton.textContent = 'בודק...';
+
+      try {
+        const response = await fetch('/api/validateSupplier', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            supplierNumber: form.elements.supplierNumber.value,
+            supplierName: form.elements.supplierName.value,
+            supplierEmail: form.elements.supplierEmail.value
+          })
+        });
+        let result;
+        try {
+          result = await response.json();
+        } catch {
+          throw new Error('לא ניתן להתחבר לשירות בדיקת הספקים כרגע.');
+        }
+
+        if (!response.ok) {
+          status.textContent = typeof result.error === 'string'
+            ? result.error
+            : 'לא ניתן לבדוק את פרטי הספק כרגע.';
+          return;
+        }
+
+        if (result.valid) {
+          status.textContent = 'פרטי הספק נמצאו ברשימה.';
+          status.classList.add('is-success');
+        } else {
+          status.textContent = 'לא נמצאה התאמה לפרטים שהוזנו. נא לבדוק אותם ולנסות שוב.';
+        }
+      } catch {
+        status.textContent = 'לא ניתן להתחבר לשירות בדיקת הספקים כרגע.';
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = 'כניסה';
+      }
     });
   </script>
 </body>
