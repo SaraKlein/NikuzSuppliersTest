@@ -94,7 +94,7 @@ async function supplierExists(values, accessToken) {
   }
 
   let nextUrl = new URL(`${graphBaseUrl}/sites/${site.id}/lists/${list.id}/items`);
-  nextUrl.searchParams.set('$expand', 'fields($select=field_1,Title,fileld_7)');
+  nextUrl.searchParams.set('$expand', 'fields($select=field_1,Title,field_7)');
   nextUrl.searchParams.set('$top', '200');
 
   while (nextUrl) {
