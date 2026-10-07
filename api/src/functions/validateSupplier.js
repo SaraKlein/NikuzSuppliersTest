@@ -134,9 +134,7 @@ app.http('validateSupplier', {
   methods: ['POST'],
   authLevel: 'anonymous',
   handler: async (request, context) => {
-    console.log('Received supplier validation request.');
     const credentials = getCredentials();
-    console.log('SharePoint credentials:', credentials ? 'found' : 'missing');
     if (!credentials) {
       context.error('Supplier validation is not configured: SharePoint credentials are missing.');
       return jsonResponse(503, { error: 'בדיקת הספק אינה זמינה כרגע.' });
@@ -183,10 +181,7 @@ app.http('validateSupplier', {
       return jsonResponse(200, { valid });
     } catch (error) {
       context.error('Supplier validation failed', error);
-      return jsonResponse(502, {
-        error: 'לא ניתן לבדוק את פרטי הספק כרגע.',
-        detail: error.message   // TEMPORARY: remove after debugging
-      });
+      return jsonResponse(502, { error: 'לא ניתן לבדוק את פרטי הספק כרגע.' });
     }
   }
 });

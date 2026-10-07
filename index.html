@@ -212,12 +212,6 @@
             submitButton.disabled = true;
             submitButton.textContent = 'בודק...';
 
-            var body = JSON.stringify({
-                supplierNumber: form.elements.supplierNumber.value,
-                supplierName: form.elements.supplierName.value,
-                supplierEmail: form.elements.supplierEmail.value
-            });
-            console.log('Request body:', body);
             try {
                 const response = await fetch('/api/validateSupplier', {
                     method: 'POST',
@@ -228,21 +222,28 @@
                         supplierEmail: form.elements.supplierEmail.value
                     })
                 });
-                let result;
+
+                const responseBody = await response.text();
+                let result = null;
                 try {
-                    result = await response.json();
+                    if (responseBody.trim()) {
+                        result = JSON.parse(responseBody);
+                    }
                 } catch {
-                    throw new Error('לא ניתן להתחבר לשירות בדיקת הספקים כרגע.');
+                    status.textContent = 'שירות בדיקת הספקים החזיר תשובה לא תקינה.';
+                    return;
                 }
 
                 if (!response.ok) {
-                    status.textContent = typeof result.error === 'string'
+                    status.textContent = result && typeof result.error === 'string'
                         ? result.error
                         : 'לא ניתן לבדוק את פרטי הספק כרגע.';
                     return;
                 }
 
-                if (result.valid) {
+                if (!result || typeof result.valid !== 'boolean') {
+                    status.textContent = 'שירות בדיקת הספקים החזיר תשובה לא תקינה.';
+                } else if (result.valid) {
                     status.textContent = 'פרטי הספק נמצאו ברשימה.';
                     status.classList.add('is-success');
                 } else {
