@@ -23,13 +23,13 @@ function normalize(value) {
 
 function getCredentials() {
   console.log('Retrieving SharePoint credentials from environment variables.');
-  console.log('Environment variables:', json.stringify(process.env));
+  console.log('Environment variables:', JSON.stringify(process.env));
   const { SHAREPOINT_TENANT_ID, SHAREPOINT_CLIENT_ID, SHAREPOINT_CLIENT_SECRET } = process.env;
   if (!SHAREPOINT_TENANT_ID || !SHAREPOINT_CLIENT_ID || !SHAREPOINT_CLIENT_SECRET) {
     return null;
   }
 
-  console.log('SharePoint credentials found in environment variables.', json.stringify({
+  console.log('SharePoint credentials found in environment variables.', JSON.stringify({
     tenantId: SHAREPOINT_TENANT_ID,
     clientId: SHAREPOINT_CLIENT_ID,
     clientSecret: SHAREPOINT_CLIENT_SECRET
@@ -110,7 +110,7 @@ async function supplierExists(values, accessToken) {
       const fields = item.fields || {};
       return normalize(fields.field_1) === values.supplierNumber
         && normalize(fields.Title) === values.supplierName
-        && normalize(fields.fileld_7) === values.supplierEmail;
+        && normalize(fields.field_7) === values.supplierEmail;
     });
 
     if (found) {
@@ -182,8 +182,11 @@ app.http('validateSupplier', {
 
       return jsonResponse(200, { valid });
     } catch (error) {
-      context.error('Supplier validation failed while contacting Microsoft Graph.', error);
-      return jsonResponse(502, { error: 'לא ניתן לבדוק את פרטי הספק כרגע.' });
+      context.error('Supplier validation failed', error);
+      return jsonResponse(502, {
+        error: 'לא ניתן לבדוק את פרטי הספק כרגע.',
+        detail: error.message   // TEMPORARY: remove after debugging
+      });
     }
   }
 });
