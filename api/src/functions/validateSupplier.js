@@ -22,6 +22,8 @@ function normalize(value) {
 }
 
 function getCredentials() {
+  console.log('Retrieving SharePoint credentials from environment variables.');
+  console.log('Environment variables:', json.stringify(process.env));
   const { SHAREPOINT_TENANT_ID, SHAREPOINT_CLIENT_ID, SHAREPOINT_CLIENT_SECRET } = process.env;
   if (!SHAREPOINT_TENANT_ID || !SHAREPOINT_CLIENT_ID || !SHAREPOINT_CLIENT_SECRET) {
     return null;
@@ -132,6 +134,7 @@ app.http('validateSupplier', {
   methods: ['POST'],
   authLevel: 'anonymous',
   handler: async (request, context) => {
+    console.log('Received supplier validation request.');
     const credentials = getCredentials();
     console.log('SharePoint credentials:', credentials ? 'found' : 'missing');
     if (!credentials) {
