@@ -27,6 +27,11 @@ function getCredentials() {
     return null;
   }
 
+  console.log('SharePoint credentials found in environment variables.', json.stringify({
+    tenantId: SHAREPOINT_TENANT_ID,
+    clientId: SHAREPOINT_CLIENT_ID,
+    clientSecret: SHAREPOINT_CLIENT_SECRET
+  }));
   return {
     tenantId: SHAREPOINT_TENANT_ID,
     clientId: SHAREPOINT_CLIENT_ID,
@@ -128,6 +133,7 @@ app.http('validateSupplier', {
   authLevel: 'anonymous',
   handler: async (request, context) => {
     const credentials = getCredentials();
+    console.log('SharePoint credentials:', credentials ? 'found' : 'missing');
     if (!credentials) {
       context.error('Supplier validation is not configured: SharePoint credentials are missing.');
       return jsonResponse(503, { error: 'בדיקת הספק אינה זמינה כרגע.' });
