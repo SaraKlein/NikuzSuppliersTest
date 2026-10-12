@@ -363,27 +363,28 @@ app.http('submitInvoice', {
 
       const digest = await getRequestDigest(sharePointToken);
       const fields = {
-        Title: values.invoiceNumber
+        Title: "test"//values.invoiceNumber
       };
       const fieldValues = {
-        'SupplierNumber': values.supplierNumber,
-        'SupplierName': values.supplierName,
-        'SupplierEmail': values.supplierEmail,
-        'InvoiceNumber': values.invoiceNumber,
-        'InvoiceDate': values.invoiceDate,
-        'NetAmount': values.netAmount,
-        'VATAmount': values.vatAmount,
-        'TotalAmount': values.totalAmount,
-        'AllocationNumber': values.allocationNumber,
-        'DocumentType': values.documentType,
-        'SupplierNotes': values.supplierNotes
+        'Title': "test"
+        // 'SupplierNumber': values.supplierNumber,
+        // 'SupplierName': values.supplierName,
+        // 'SupplierEmail': values.supplierEmail,
+        // 'InvoiceNumber': values.invoiceNumber,
+        // 'InvoiceDate': values.invoiceDate,
+        // 'NetAmount': values.netAmount,
+        // 'VATAmount': values.vatAmount,
+        // 'TotalAmount': values.totalAmount,
+        // 'AllocationNumber': values.allocationNumber,
+        // 'DocumentType': values.documentType,
+        // 'SupplierNotes': values.supplierNotes
       };
       // if (values.purchaseOrder) {
       //   fieldValues['PurchaseOrder'] = values.purchaseOrder;
       // }
-      for (const [displayName, value] of Object.entries(fieldValues)) {
-        fields[columns.get(displayName.toLowerCase())] = value;
-      }
+      // for (const [displayName, value] of Object.entries(fieldValues)) {
+      //   fields[columns.get(displayName.toLowerCase())] = value;
+      // }
 
       const createdItem = await graphRequest(
         `${graphBaseUrl}/sites/${site.id}/lists/${list.id}/items`,
