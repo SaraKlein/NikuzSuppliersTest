@@ -286,10 +286,10 @@ function safeFileName(name, index, usedNames) {
   return candidate;
 }
 
-async function addAttachment(itemId, file, fileName, accessToken, digest) {
+async function addAttachment(listId, itemId, file, fileName, accessToken, digest) {
   const escapedFileName = encodeURIComponent(fileName.replace(/'/g, "''")).replace(/'/g, '%27');
   const response = await fetch(
-    `${siteUrl}/_api/web/lists/GetByTitle('${listName}')/items(${itemId})/AttachmentFiles/add(FileName='${escapedFileName}')`,
+    `${siteUrl}/_api/web/lists(guid'${listId}')/items(${itemId})/AttachmentFiles/add(FileName='${escapedFileName}')`,
     {
       method: 'POST',
       headers: {
@@ -401,7 +401,7 @@ app.http('submitInvoice', {
       // try {
       //   for (let index = 0; index < attachments.length; index += 1) {
       //     const fileName = safeFileName(attachments[index].name, index, usedNames);
-      //     await addAttachment(createdItem.id, attachments[index], fileName, sharePointToken, digest);
+      //     await addAttachment(list.id, createdItem.id, attachments[index], fileName, sharePointToken, digest);
       //   }
       // } catch (error) {
       //   try {
