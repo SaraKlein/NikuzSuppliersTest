@@ -8,17 +8,17 @@ const listName = 'Invoices';
 const supplierListName = 'Suppliers';
 const maxUploadBytes = 50 * 1024 * 1024;
 const invoiceColumns = [
-  'Supplier Number',
-  'Supplier Name',
-  'Supplier Email',
-  'Invoice Number',
-  'Invoice Date',
-  'Net Amount',
-  'VAT Amount',
-  'Total Amount',
-  'Allocation Number',
-  'Document Type',
-  'Supplier Notes'
+  'SupplierNumber',
+  'SupplierName',
+  'SupplierEmail',
+  'InvoiceNumber',
+  'InvoiceDate',
+  'NetAmount',
+  'VATAmount',
+  'TotalAmount',
+  'AllocationNumber',
+  'DocumentType',
+  'SupplierNotes'
 ];
 
 function jsonResponse(status, body) {
