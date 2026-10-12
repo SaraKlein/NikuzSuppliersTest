@@ -670,9 +670,70 @@
         netAmount.addEventListener('input', updateInvoiceTotal);
         vatAmount.addEventListener('input', updateInvoiceTotal);
 
-        invoiceForm.addEventListener('submit', (event) => {
+        invoiceForm.addEventListener('submit', async (event) => {
             event.preventDefault();
-            invoiceStatus.textContent = 'הטופס מוכן, אך שליחת החשבונית עדיין אינה מחוברת למערכת.';
+            invoiceStatus.textContent = '';
+            invoiceStatus.classList.remove('is-success');
+
+            if (!invoiceForm.reportValidity()) {
+                return;
+            }
+
+            const submitButton = invoiceForm.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'שולח...';
+
+            try {
+                const response = await fetch('/api/submitInvoice', {
+                    method: 'POST',
+                    body: new FormData(invoiceForm)
+                });
+                const responseBody = await response.text();
+                let result = null;
+                try {
+                    if (responseBody.trim()) {
+                        result = JSON.parse(responseBody);
+                    }
+                } catch {
+                    invoiceStatus.textContent = 'שירות שליחת החשבוניות החזיר תשובה לא תקינה.';
+                    return;
+                }
+
+                if (!response.ok) {
+                    invoiceStatus.textContent = result && typeof result.error === 'string'
+                        ? result.error
+                        : 'לא ניתן לשמור את החשבונית כרגע.';
+                    return;
+                }
+
+                if (!result || result.success !== true) {
+                    invoiceStatus.textContent = 'שירות שליחת החשבוניות החזיר תשובה לא תקינה.';
+                    return;
+                }
+
+                for (const name of [
+                    'purchaseOrder',
+                    'invoiceNumber',
+                    'invoiceDate',
+                    'invoiceNet',
+                    'invoiceVat',
+                    'invoiceTotal',
+                    'allocationNumber',
+                    'documentType',
+                    'supplierNotes',
+                    'invoiceFile',
+                    'supportingFiles'
+                ]) {
+                    invoiceForm.elements[name].value = '';
+                }
+                invoiceStatus.textContent = 'החשבונית נשמרה ונשלחה בהצלחה.';
+                invoiceStatus.classList.add('is-success');
+            } catch {
+                invoiceStatus.textContent = 'לא ניתן להתחבר לשירות שליחת החשבוניות כרגע.';
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'שליחת החשבונית';
+            }
         });
 
         document.getElementById('logout-button').addEventListener('click', () => {

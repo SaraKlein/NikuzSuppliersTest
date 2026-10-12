@@ -22,18 +22,11 @@ function normalize(value) {
 }
 
 function getCredentials() {
-  console.log('Retrieving SharePoint credentials from environment variables.');
-  console.log('Environment variables:', JSON.stringify(process.env));
   const { SHAREPOINT_TENANT_ID, SHAREPOINT_CLIENT_ID, SHAREPOINT_CLIENT_SECRET } = process.env;
   if (!SHAREPOINT_TENANT_ID || !SHAREPOINT_CLIENT_ID || !SHAREPOINT_CLIENT_SECRET) {
     return null;
   }
 
-  console.log('SharePoint credentials found in environment variables.', JSON.stringify({
-    tenantId: SHAREPOINT_TENANT_ID,
-    clientId: SHAREPOINT_CLIENT_ID,
-    clientSecret: SHAREPOINT_CLIENT_SECRET
-  }));
   return {
     tenantId: SHAREPOINT_TENANT_ID,
     clientId: SHAREPOINT_CLIENT_ID,
@@ -119,7 +112,7 @@ async function supplierExists(values, accessToken) {
 
     if (page['@odata.nextLink']) {
       nextUrl = new URL(page['@odata.nextLink']);
-      if (nextUrl.origin !== graphBaseUrl) {
+      if (nextUrl.origin !== new URL(graphBaseUrl).origin) {
         throw new Error('Microsoft Graph returned an unexpected pagination URL');
       }
     } else {
