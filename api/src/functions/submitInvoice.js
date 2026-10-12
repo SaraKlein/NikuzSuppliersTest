@@ -311,111 +311,26 @@ async function addAttachment(listId, itemId, file, fileName, accessToken, digest
 app.http('submitInvoice', {
   methods: ['POST'],
   authLevel: 'anonymous',
-  handler: async (request, context) => {
+  handler: async (_request, context) => {
     const credentials = getCredentials();
     if (!credentials) {
       context.error('Invoice submission is not configured: SharePoint credentials are missing.');
       return jsonResponse(503, { error: 'שליחת החשבונית אינה זמינה כרגע.' });
     }
 
-    let formData;
     try {
-      formData = await request.formData();
-    } catch {
-      return jsonResponse(400, { error: 'הטופס לא התקבל בפורמט תקין.' });
-    }
-
-    const values = getInvoiceValues(formData);
-    const files = formData.getAll('invoiceFile').filter((file) => isFile(file) && file.name);
-    const supportingFiles = formData.getAll('supportingFiles').filter((file) => isFile(file) && file.name);
-    if (!values || files.length !== 1 || !/\.pdf$/i.test(files[0].name)) {
-      return jsonResponse(400, { error: 'נא למלא את פרטי החשבונית ולצרף חשבונית בפורמט PDF.' });
-    }
-
-    const attachments = [files[0], ...supportingFiles];
-    const totalFileSize = attachments.reduce((total, file) => total + file.size, 0);
-    if (attachments.some((file) => file.size === 0) || totalFileSize > maxUploadBytes) {
-      return jsonResponse(413, { error: 'הקבצים ריקים או שגודל הקבצים המצטבר עולה על 50MB.' });
-    }
-
-    try {
-      const pdfHeader = Buffer.from(await files[0].slice(0, 5).arrayBuffer()).toString('ascii');
-      if (pdfHeader !== '%PDF-') {
-        return jsonResponse(400, { error: 'הקובץ המצורף אינו קובץ PDF תקין.' });
-      }
-
-      const [graphToken, sharePointToken] = await Promise.all([
-        getAccessToken(credentials, 'https://graph.microsoft.com/.default'),
-        getAccessToken(credentials, `https://${siteHost}/.default`)
-      ]);
+      const graphToken = await getAccessToken(credentials, 'https://graph.microsoft.com/.default');
       const { site, list } = await getInvoicesList(graphToken);
-      if (!await supplierExists(site.id, values, graphToken)) {
-        return jsonResponse(403, { error: 'פרטי הספק אינם תואמים לרשימת הספקים.' });
-      }
-      const columns = await getListColumns(site.id, list.id, graphToken);
-      const missingColumns = invoiceColumns.filter((name) => !columns.has(name.toLowerCase()));
-      if (values.purchaseOrder && !columns.has('purchase order')) {
-        missingColumns.push('Purchase Order');
-      }
-      if (missingColumns.length) {
-        throw new Error(`Invoices list is missing columns: ${missingColumns.join(', ')}`);
-      }
-
-      const digest = await getRequestDigest(sharePointToken);
-      const fields = {
-        Title: "test"//values.invoiceNumber
-      };
-      const fieldValues = {
-        'Title': "test"
-        // 'SupplierNumber': values.supplierNumber,
-        // 'SupplierName': values.supplierName,
-        // 'SupplierEmail': values.supplierEmail,
-        // 'InvoiceNumber': values.invoiceNumber,
-        // 'InvoiceDate': values.invoiceDate,
-        // 'NetAmount': values.netAmount,
-        // 'VATAmount': values.vatAmount,
-        // 'TotalAmount': values.totalAmount,
-        // 'AllocationNumber': values.allocationNumber,
-        // 'DocumentType': values.documentType,
-        // 'SupplierNotes': values.supplierNotes
-      };
-      // if (values.purchaseOrder) {
-      //   fieldValues['PurchaseOrder'] = values.purchaseOrder;
-      // }
-      // for (const [displayName, value] of Object.entries(fieldValues)) {
-      //   fields[columns.get(displayName.toLowerCase())] = value;
-      // }
-
       const createdItem = await graphRequest(
         `${graphBaseUrl}/sites/${site.id}/lists/${list.id}/items`,
         graphToken,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fields })
+          body: JSON.stringify({ fields: { Title: 'test' } })
         },
         'invoice creation'
       );
-
-      // const usedNames = new Set();
-      // try {
-      //   for (let index = 0; index < attachments.length; index += 1) {
-      //     const fileName = safeFileName(attachments[index].name, index, usedNames);
-      //     await addAttachment(list.id, createdItem.id, attachments[index], fileName, sharePointToken, digest);
-      //   }
-      // } catch (error) {
-      //   try {
-      //     await graphRequest(
-      //       `${graphBaseUrl}/sites/${site.id}/lists/${list.id}/items/${createdItem.id}`,
-      //       graphToken,
-      //       { method: 'DELETE' },
-      //       'incomplete invoice cleanup'
-      //     );
-      //   } catch (cleanupError) {
-      //     context.error('Failed to remove an invoice with incomplete attachments.', cleanupError);
-      //   }
-      //   throw error;
-      // }
 
       return jsonResponse(201, { success: true, itemId: createdItem.id });
     } catch (error) {

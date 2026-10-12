@@ -484,7 +484,7 @@
 
         <div class="notice" role="note">פרטי הספק אומתו. ניתן למלא את פרטי החשבונית; רשימת הזמנות הרכש והשליחה יחוברו בהמשך.</div>
 
-        <form id="invoice-form">
+        <form id="invoice-form" novalidate>
             <section class="form-panel" aria-labelledby="supplier-panel-title">
                 <h2 class="panel-title" id="supplier-panel-title">פרטי הספק</h2>
                 <div class="panel-content supplier-summary">
@@ -674,10 +674,6 @@
             event.preventDefault();
             invoiceStatus.textContent = '';
             invoiceStatus.classList.remove('is-success');
-
-            if (!invoiceForm.reportValidity()) {
-                return;
-            }
 
             const submitButton = invoiceForm.querySelector('button[type="submit"]');
             submitButton.disabled = true;
