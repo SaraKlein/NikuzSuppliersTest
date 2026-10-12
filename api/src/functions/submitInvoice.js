@@ -366,21 +366,21 @@ app.http('submitInvoice', {
         Title: values.invoiceNumber
       };
       const fieldValues = {
-        'Supplier Number': values.supplierNumber,
-        'Supplier Name': values.supplierName,
-        'Supplier Email': values.supplierEmail,
-        'Invoice Number': values.invoiceNumber,
-        'Invoice Date': values.invoiceDate,
-        'Net Amount': values.netAmount,
-        'VAT Amount': values.vatAmount,
-        'Total Amount': values.totalAmount,
-        'Allocation Number': values.allocationNumber,
-        'Document Type': values.documentType,
-        'Supplier Notes': values.supplierNotes
+        'SupplierNumber': values.supplierNumber,
+        'SupplierName': values.supplierName,
+        'SupplierEmail': values.supplierEmail,
+        'InvoiceNumber': values.invoiceNumber,
+        'InvoiceDate': values.invoiceDate,
+        'NetAmount': values.netAmount,
+        'VATAmount': values.vatAmount,
+        'TotalAmount': values.totalAmount,
+        'AllocationNumber': values.allocationNumber,
+        'DocumentType': values.documentType,
+        'SupplierNotes': values.supplierNotes
       };
-      if (values.purchaseOrder) {
-        fieldValues['Purchase Order'] = values.purchaseOrder;
-      }
+      // if (values.purchaseOrder) {
+      //   fieldValues['PurchaseOrder'] = values.purchaseOrder;
+      // }
       for (const [displayName, value] of Object.entries(fieldValues)) {
         fields[columns.get(displayName.toLowerCase())] = value;
       }
@@ -396,25 +396,25 @@ app.http('submitInvoice', {
         'invoice creation'
       );
 
-      const usedNames = new Set();
-      try {
-        for (let index = 0; index < attachments.length; index += 1) {
-          const fileName = safeFileName(attachments[index].name, index, usedNames);
-          await addAttachment(createdItem.id, attachments[index], fileName, sharePointToken, digest);
-        }
-      } catch (error) {
-        try {
-          await graphRequest(
-            `${graphBaseUrl}/sites/${site.id}/lists/${list.id}/items/${createdItem.id}`,
-            graphToken,
-            { method: 'DELETE' },
-            'incomplete invoice cleanup'
-          );
-        } catch (cleanupError) {
-          context.error('Failed to remove an invoice with incomplete attachments.', cleanupError);
-        }
-        throw error;
-      }
+      // const usedNames = new Set();
+      // try {
+      //   for (let index = 0; index < attachments.length; index += 1) {
+      //     const fileName = safeFileName(attachments[index].name, index, usedNames);
+      //     await addAttachment(createdItem.id, attachments[index], fileName, sharePointToken, digest);
+      //   }
+      // } catch (error) {
+      //   try {
+      //     await graphRequest(
+      //       `${graphBaseUrl}/sites/${site.id}/lists/${list.id}/items/${createdItem.id}`,
+      //       graphToken,
+      //       { method: 'DELETE' },
+      //       'incomplete invoice cleanup'
+      //     );
+      //   } catch (cleanupError) {
+      //     context.error('Failed to remove an invoice with incomplete attachments.', cleanupError);
+      //   }
+      //   throw error;
+      // }
 
       return jsonResponse(201, { success: true, itemId: createdItem.id });
     } catch (error) {
