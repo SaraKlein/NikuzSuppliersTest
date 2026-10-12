@@ -311,7 +311,7 @@ async function addAttachment(listId, itemId, file, fileName, accessToken, digest
 app.http('submitInvoice', {
   methods: ['POST'],
   authLevel: 'anonymous',
-  handler: async (_request, context) => {
+  handler: async (request, context) => {
     const credentials = getCredentials();
     if (!credentials) {
       context.error('Invoice submission is not configured: SharePoint credentials are missing.');
@@ -319,6 +319,12 @@ app.http('submitInvoice', {
     }
 
     try {
+      const formData = await request.formData();
+      const supplierNumber = formData.get('verifiedNumber');
+      if (typeof supplierNumber !== 'string' || !supplierNumber.trim()) {
+        return jsonResponse(400, { error: 'מספר הספק חסר.' });
+      }
+
       const graphToken = await getAccessToken(credentials, 'https://graph.microsoft.com/.default');
       const { site, list } = await getInvoicesList(graphToken);
       const createdItem = await graphRequest(
@@ -327,7 +333,12 @@ app.http('submitInvoice', {
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fields: { Title: 'test' } })
+          body: JSON.stringify({
+            fields: {
+              Title: 'test',
+              SupplierNumber: supplierNumber.trim()
+            }
+          })
         },
         'invoice creation'
       );
